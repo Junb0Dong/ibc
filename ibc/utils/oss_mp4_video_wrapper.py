@@ -17,6 +17,7 @@
 
 import os
 import cv2
+from absl import logging
 
 
 class Mp4VideoWrapper():
@@ -54,6 +55,8 @@ class Mp4VideoWrapper():
 
   def _add_frame(self):
     frame = self.env.render()
+    logging.info(f"Rendered frame shape: {frame.shape if frame is not None else 'None'}")
+    assert frame is not None, "Rendered frame is None. in _add_frame located in oss_mp4_video_wrapper.py"
     self._video_recorder.add_frame(frame)
 
 
@@ -68,6 +71,8 @@ class OssMp4VideoRecorder():
     if not os.path.isdir(basedir):
       os.system("mkdir -p " + basedir)
     self.last_frame = None  # buffer so we don't write the last one.
+    
+    self.frame_count = 0  # 新增计数器
 
   def init_vid_writer(self, width, height):
     self.fourcc = cv2.VideoWriter_fourcc(*"mp4v")
@@ -98,7 +103,20 @@ class OssMp4VideoRecorder():
     if self.last_frame is not None:
       self.vid_writer.write(self.last_frame)
     self.last_frame = frame
+    
+    self.frame_count += 1
+    logging.info(f"Added frame {self.frame_count} to video.")
 
   def end_video(self):
     """Closes the video recorder and writes the frame buffer to disk."""
+    # Write any buffered last frame before releasing the writer. If no
+    # frames were written (vid_writer may still be None), just return.
+    if self.vid_writer is None:
+      return
+    if self.last_frame is not None:
+      # write the final buffered frame
+      self.vid_writer.write(self.last_frame)
+      self.last_frame = None
+    logging.info(f"Total frames written: {self.frame_count}")  # 打印总帧数
     self.vid_writer.release()
+    self.vid_writer = None

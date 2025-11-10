@@ -53,7 +53,7 @@ flags.DEFINE_multi_string('gin_file', None, 'Paths to the gin-config files.')
 flags.DEFINE_multi_string('gin_bindings', None, 'Gin binding parameters.')
 flags.DEFINE_bool('shared_memory_eval', False,
                   'If true the eval_env uses shared_memory.')
-flags.DEFINE_bool('video', False,
+flags.DEFINE_bool('video', True,
                   'If true, write out one rollout video after eval.')
 flags.DEFINE_multi_enum(
     'task', None,
@@ -141,8 +141,13 @@ def train_eval(
     eval_envs.append(eval_env)
     env_names.append(env_name)
 
+  # TODO：查看obs使用了什么
   obs_tensor_spec, action_tensor_spec, time_step_tensor_spec = (
       spec_utils.get_tensor_specs(eval_envs[0]))
+  
+  print('obs_tensor_spec:', obs_tensor_spec)
+  print('action_tensor_spec:', action_tensor_spec)
+  print('time_step_tensor_spec:', time_step_tensor_spec)
 
   # Compute normalization info from training data.
   create_train_and_eval_fns_unnormalized = data_module.get_data_fns(
@@ -156,6 +161,12 @@ def train_eval(
   train_data, _ = create_train_and_eval_fns_unnormalized()
   (norm_info, norm_train_data_fn) = normalizers_module.get_normalizers(
       train_data, batch_size, env_name)
+  print("===========================================================\n")
+  print("===========================================================\n")
+  print("===========================================================\n")
+  print("===========================================================\n")
+  print('norm_info:', norm_info)
+  print("train_data:", train_data)
 
   # Create normalized training data.
   if not strategy:

@@ -152,8 +152,12 @@ def load_tfrecord_dataset_sequence(path_to_shards,
   # interleaves samples across the shards. Instead, we'll sample windows on
   # shards independently using interleave.
   def interleave_func(shard):
+    # The comment `# 不在这里同时使用 cache() 和 repeat()，避免部分缓存被丢弃的警告。` is written in Chinese and it
+    # translates to "Do not use cache() and repeat() together here to avoid some cached data being
+    # discarded warning."
+    # 不在这里同时使用 cache() 和 repeat()，避免部分缓存被丢弃的警告。
     dataset = tf.data.TFRecordDataset(
-        shard, buffer_size=buffer_size_per_shard).cache().repeat()
+        shard, buffer_size=buffer_size_per_shard).cache()
     dataset = dataset.window(seq_len, shift=1, stride=1, drop_remainder=True)
     return dataset.flat_map(
         lambda window: window.batch(seq_len, drop_remainder=True))

@@ -203,7 +203,7 @@ class ImplicitBCAgent(base_agent.BehavioralCloningAgent):
           # [B * n+1]
           predictions, _ = self.cloning_network(
               network_inputs, training=training,
-              observation_encoding=obs_embeddings)
+              observation_encoding=obs_embeddings)  # predictions为输出能量值，包含正负样本对应的能量值
 
         else:
           network_inputs = (maybe_tiled_obs,
@@ -473,3 +473,4 @@ class ImplicitBCAgent(base_agent.BehavioralCloningAgent):
         concat_and_squash_actions, counter_example_actions, expanded_actions)
 
     return counter_example_actions, combined_true_counter_actions, chain_data
+
